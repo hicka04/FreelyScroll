@@ -7,14 +7,28 @@
 //
 
 import UIKit
+import Combine
+import CombineCocoa
 
 class ViewController: UIViewController {
+    @IBOutlet private var scrollViews: [UIScrollView]!
+    
+    private var cancellables: Set<AnyCancellable> = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
+        let offsetSubject = PassthroughSubject<CGPoint, Never>()
+        scrollViews.forEach { scrollView in 
+            scrollView
+                .contentOffsetPublisher
+                .subscribe(offsetSubject)
+                .store(in: &cancellables)
+            offsetSubject
+                .removeDuplicates()
+                .assign(to: \.contentOffset, on: scrollView)
+                .store(in: &cancellables)
+        }
     }
-
-
 }
 
